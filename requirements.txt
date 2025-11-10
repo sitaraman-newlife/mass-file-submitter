@@ -1,4 +1,3 @@
-requests==2.31.0
-aiohttp==3.9.1
-cryptography==41.0.7
-pywin32==306
+# requirements.txt for full-feature release
+cryptography
+requests
