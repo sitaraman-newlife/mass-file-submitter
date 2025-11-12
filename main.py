@@ -24,11 +24,30 @@ class MassFileSubmitter:
         self.setup_ui()
 
     def setup_ui(self):
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-
+        # Create a canvas with scrollbar
+        canvas = tk.Canvas(self.root)
+        scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas, padding="10")
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Enable mousewheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Now use scrollable_frame instead of main_frame
+        main_frame = scrollable_frame
         # --- Credentials Section ---
         cred_frame = ttk.LabelFrame(main_frame, text="Credentials", padding="10")
         cred_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
@@ -145,9 +164,7 @@ class MassFileSubmitter:
         button_frame.grid(row=9, column=0, columnspan=2, pady=10)
         self.submit_button = ttk.Button(button_frame, text="Start Submission", command=self.start_submission)
         self.submit_button.pack(pady=5)
-        main_frame.columnconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-
+        
     def update_cred_list(self):
         self.cred_listbox.delete(0, tk.END)
         for i, cred in enumerate(self.credentials):
