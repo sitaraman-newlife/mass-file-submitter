@@ -12,7 +12,7 @@ class MassFileSubmitter:
     def __init__(self, root):
         self.root = root
         self.root.title("Mass File Submitter")
-        self.root.geometry("950x850")
+        self.root.geometry("1200x700")
 
         self.credentials = []
         self.current_cred_index = 0
@@ -27,7 +27,7 @@ class MassFileSubmitter:
         # Create a canvas with scrollbar
         canvas = tk.Canvas(self.root)
         scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas, padding="10")
+        scrollable_frame = ttk.Frame(canvas, padding="15")
         
         scrollable_frame.bind(
             "<Configure>",
@@ -49,23 +49,23 @@ class MassFileSubmitter:
         # Now use scrollable_frame instead of main_frame
         main_frame = scrollable_frame
         # --- Credentials Section ---
-        cred_frame = ttk.LabelFrame(main_frame, text="Credentials", padding="10")
+        cred_frame = ttk.LabelFrame(main_frame, text="Credentials", padding="15")
         cred_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
 
         ttk.Label(cred_frame, text="URL:").grid(row=0, column=0, sticky=tk.W)
-        url_entry = ttk.Entry(cred_frame, width=50)
+        url_entry = ttk.Entry(cred_frame, width=70)
         url_entry.grid(row=0, column=1, padx=5)
 
         ttk.Label(cred_frame, text="Username:").grid(row=1, column=0, sticky=tk.W)
-        user_entry = ttk.Entry(cred_frame, width=50)
+        user_entry = ttk.Entry(cred_frame, width=70)
         user_entry.grid(row=1, column=1, padx=5)
 
         ttk.Label(cred_frame, text="Password:").grid(row=2, column=0, sticky=tk.W)
-        pass_entry = ttk.Entry(cred_frame, width=50, show="*")
+        pass_entry = ttk.Entry(cred_frame, width=70, show="*")
         pass_entry.grid(row=2, column=1, padx=5)
 
         ttk.Label(cred_frame, text="Headers (JSON):").grid(row=3, column=0, sticky=tk.W)
-        head_entry = ttk.Entry(cred_frame, width=50)
+        head_entry = ttk.Entry(cred_frame, width=70)
         head_entry.grid(row=3, column=1, padx=5)
 
         def add_credential():
@@ -104,7 +104,7 @@ class MassFileSubmitter:
         self.cred_listbox.config(yscrollcommand=scrollbar.set)
 
         # --- Files Section ---
-        files_frame = ttk.LabelFrame(main_frame, text="Files to Submit", padding="10")
+        files_frame = ttk.LabelFrame(main_frame, text="Files to Submit", padding="15")
         files_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         def select_files():
             files = filedialog.askopenfilenames()
@@ -121,7 +121,7 @@ class MassFileSubmitter:
         self.file_listbox.config(yscrollcommand=file_scrollbar.set)
 
         # --- Anti-throttle options ---
-        throttle_frame = ttk.LabelFrame(main_frame, text="Anti-Throttle & Retry Config", padding="10")
+        throttle_frame = ttk.LabelFrame(main_frame, text="Anti-Throttle & Retry Config", padding="15")
         throttle_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         ttk.Label(throttle_frame, text="Delay between submissions (seconds):").grid(row=0, column=0, sticky=tk.W)
         delay_spin = tk.Spinbox(throttle_frame, from_=1, to=30, width=5)
@@ -145,7 +145,7 @@ class MassFileSubmitter:
         self.status_label = ttk.Label(main_frame, text="")
         self.status_label.grid(row=6, column=0, columnspan=2, pady=5)
 
-        output_frame = ttk.LabelFrame(main_frame, text="Output Log", padding="10")
+        output_frame = ttk.LabelFrame(main_frame, text="Output Log", padding="15")
         output_frame.grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         main_frame.rowconfigure(7, weight=1)
         self.output_text = tk.Text(output_frame, height=8, wrap=tk.WORD)
