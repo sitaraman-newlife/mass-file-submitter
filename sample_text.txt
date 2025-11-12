@@ -1,1 +1,1 @@
-This is a sample text file for testing the mass file submission tool.
+Hello, this is a test.
