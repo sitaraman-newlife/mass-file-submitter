@@ -12,9 +12,8 @@ class MassFileSubmitter:
     def __init__(self, root):
         self.root = root
         self.root.title("Mass File Submitter")
-        self.root.geometry("950x800")
+        self.root.geometry("950x850")
 
-        # Data storage
         self.credentials = []
         self.current_cred_index = 0
         self.files_to_submit = []
@@ -30,7 +29,7 @@ class MassFileSubmitter:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        # Credentials section
+        # --- Credentials Section ---
         cred_frame = ttk.LabelFrame(main_frame, text="Credentials", padding="10")
         cred_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
 
@@ -74,8 +73,8 @@ class MassFileSubmitter:
         ttk.Button(cred_frame, text="Add Credential", command=add_credential).grid(row=4, column=1, pady=5)
         ttk.Button(cred_frame, text="Save Credentials", command=self.save_credentials).grid(row=5, column=0, pady=5)
         ttk.Button(cred_frame, text="Load Credentials", command=self.load_credentials).grid(row=5, column=1, pady=5)
+        ttk.Button(cred_frame, text="Clear Credentials", command=self.clear_credentials).grid(row=6, column=0, columnspan=2, pady=5)
 
-        # Credentials list
         list_frame = ttk.Frame(main_frame)
         list_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         self.cred_listbox = tk.Listbox(list_frame, height=4)
@@ -85,7 +84,7 @@ class MassFileSubmitter:
         scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         self.cred_listbox.config(yscrollcommand=scrollbar.set)
 
-        # Files section
+        # --- Files Section ---
         files_frame = ttk.LabelFrame(main_frame, text="Files to Submit", padding="10")
         files_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         def select_files():
@@ -94,6 +93,7 @@ class MassFileSubmitter:
                 self.files_to_submit.extend(files)
                 self.update_file_list()
         ttk.Button(files_frame, text="Select Files", command=select_files).grid(row=0, column=0, pady=5)
+        ttk.Button(files_frame, text="Clear Files", command=self.clear_files).grid(row=0, column=1, padx=5)
         self.file_listbox = tk.Listbox(files_frame, height=4)
         self.file_listbox.grid(row=1, column=0, sticky=(tk.W, tk.E))
         files_frame.columnconfigure(0, weight=1)
@@ -101,7 +101,7 @@ class MassFileSubmitter:
         file_scrollbar.grid(row=1, column=1, sticky=(tk.N, tk.S))
         self.file_listbox.config(yscrollcommand=file_scrollbar.set)
 
-        # Anti-throttle options
+        # --- Anti-throttle options ---
         throttle_frame = ttk.LabelFrame(main_frame, text="Anti-Throttle & Retry Config", padding="10")
         throttle_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         ttk.Label(throttle_frame, text="Delay between submissions (seconds):").grid(row=0, column=0, sticky=tk.W)
@@ -109,13 +109,11 @@ class MassFileSubmitter:
         delay_spin.grid(row=0, column=1, sticky=(tk.W), padx=5)
         delay_spin.delete(0, tk.END)
         delay_spin.insert(0, str(self.delay_seconds))
-
         ttk.Label(throttle_frame, text="Max retries per file:").grid(row=0, column=2, sticky=tk.W)
         retry_spin = tk.Spinbox(throttle_frame, from_=1, to=10, width=5)
         retry_spin.grid(row=0, column=3, sticky=(tk.W), padx=5)
         retry_spin.delete(0, tk.END)
         retry_spin.insert(0, str(self.max_retries))
-
         def update_throttle_settings():
             self.delay_seconds = int(delay_spin.get())
             self.max_retries = int(retry_spin.get())
@@ -123,7 +121,6 @@ class MassFileSubmitter:
 
         self.progress_label = ttk.Label(main_frame, text="Ready")
         self.progress_label.grid(row=4, column=0, columnspan=2, pady=5)
-
         self.progress_bar = ttk.Progressbar(main_frame, mode='determinate')
         self.progress_bar.grid(row=5, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         self.status_label = ttk.Label(main_frame, text="")
@@ -140,8 +137,12 @@ class MassFileSubmitter:
         output_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         self.output_text.config(yscrollcommand=output_scrollbar.set)
 
+        # --- Status label for last file status ---
+        self.last_status_label = ttk.Label(main_frame, text="Last file status:")
+        self.last_status_label.grid(row=8, column=0, columnspan=2, pady=5)
+
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=8, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=9, column=0, columnspan=2, pady=10)
         self.submit_button = ttk.Button(button_frame, text="Start Submission", command=self.start_submission)
         self.submit_button.pack(pady=5)
         main_frame.columnconfigure(0, weight=1)
@@ -160,6 +161,9 @@ class MassFileSubmitter:
     def log_output(self, message):
         self.output_text.insert(tk.END, message + "\n")
         self.output_text.see(tk.END)
+
+    def update_last_status(self, message):
+        self.last_status_label.config(text=f"Last file status: {message}")
 
     def start_submission(self):
         if not self.credentials:
@@ -187,6 +191,7 @@ class MassFileSubmitter:
                         break
                     else:
                         self.log_output(f"Retrying {os.path.basename(file_path)}, attempt {attempt + 1}")
+                        self.update_last_status(f"Retrying {os.path.basename(file_path)}, attempt {attempt + 1}")
                         time.sleep(self.delay_seconds)
                 completed += 1
                 progress = (completed / total) * 100
@@ -215,13 +220,19 @@ class MassFileSubmitter:
                     timeout=30
                 )
             if response.status_code == 200:
-                self.log_output(f"✓ Success: {os.path.basename(file_path)}")
+                result = f"✓ Success: {os.path.basename(file_path)}"
+                self.log_output(result)
+                self.update_last_status(result)
                 return True
             else:
-                self.log_output(f"✗ Failed: {os.path.basename(file_path)} - Status {response.status_code}")
+                result = f"✗ Failed: {os.path.basename(file_path)} - Status {response.status_code}"
+                self.log_output(result)
+                self.update_last_status(result)
                 return False
         except Exception as e:
-            self.log_output(f"✗ Error: {os.path.basename(file_path)} - {str(e)}")
+            result = f"✗ Error: {os.path.basename(file_path)} - {str(e)}"
+            self.log_output(result)
+            self.update_last_status(result)
             return False
 
     def save_credentials(self):
@@ -253,6 +264,16 @@ class MassFileSubmitter:
             messagebox.showinfo('Credentials', 'Credentials loaded successfully.')
         except Exception as e:
             messagebox.showerror('Error', f'Failed to load credentials: {str(e)}')
+
+    def clear_files(self):
+        self.files_to_submit.clear()
+        self.update_file_list()
+        self.update_last_status("File list cleared.")
+
+    def clear_credentials(self):
+        self.credentials.clear()
+        self.update_cred_list()
+        self.update_last_status("Credential list cleared.")
 
 if __name__ == "__main__":
     root = tk.Tk()
